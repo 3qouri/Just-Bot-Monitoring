@@ -5,8 +5,8 @@ name: JUST Telegram Bot
 
 jobs:
   run-bot:
-    runs-on: windows-2025
-    timeout-minutes: 350
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
@@ -20,23 +20,24 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check Chrome
+        shell: powershell
+        run: |
+          $chromePaths = @(
+            "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+            "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+            "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+          )
+          $chrome = $chromePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $chrome) {
+            Write-Error "Google Chrome was not found on this self-hosted runner."
+          }
+          Write-Host "Chrome: $chrome"
+
       - name: Create browser profile directory
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path "C:\Users\owndi\just_bot\browser_profile" | Out-Null
-
-      - name: Restore bot data and browser profile
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:\Users\owndi\just_bot\browser_profile
-            course_states.json
-            watched_course.json
-            course_metadata.json
-            users.json
-          key: just-bot-state-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            just-bot-state-${{ github.ref_name }}-
 
       - name: Install Python packages
         shell: powershell
