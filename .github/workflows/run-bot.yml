@@ -5,7 +5,7 @@ name: JUST Telegram Bot
 
 jobs:
   run-bot:
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: self-hosted
     timeout-minutes: 360
     env:
       PYTHONUTF8: "1"
@@ -14,25 +14,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Check Chrome
-        shell: powershell
-        run: |
-          $chromePaths = @(
-            "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
-            "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
-            "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
-          )
-          $chrome = $chromePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $chrome) {
-            Write-Error "Google Chrome was not found on this self-hosted runner."
-          }
-          Write-Host "Chrome: $chrome"
 
       - name: Create browser profile directory
         shell: powershell
